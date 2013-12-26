@@ -8,8 +8,9 @@
 namespace Nerdery\CsvBundle\FileReader\Factory;
 
 use Nerdery\CsvBundle\FileReader\CsvFileReader;
-use Nerdery\CsvBundle\FileReader\FileReaderInterface;
-use Nerdery\CsvBundle\FileReader\Factory\FileReaderFactoryInterface;
+use Nerdery\CsvBundle\FileReader\CsvFileReaderInterface;
+use Nerdery\CsvBundle\FileReader\Factory\CsvFileReaderFactoryInterface;
+use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptions;
 
 /**
  * FileReaderFactory
@@ -18,33 +19,20 @@ use Nerdery\CsvBundle\FileReader\Factory\FileReaderFactoryInterface;
  *
  * @author Thomas Houfek <thomas.houfek@nerdery.com>
  */
-class CsvFileReaderFactory implements CsvFileReaderFactoryInterface {
+class CsvFileReaderFactory implements CsvFileReaderFactoryInterface
+{
 
     /**
      * Create
      *
      * @param array $options
-     * @return FileReaderInterface
+     * @return CsvFileReaderInterface
      */
     public function create(array $options = [])
     {
-        $supportedOptions = [
-            'length',
-            'delimiter',
-            'enclosure',
-            'escape',
-            'enforce-complete-data-rows',
-        ];
+        $csvFileReaderOptions = new CsvFileReaderOptions($options);
 
-        foreach ($options as $option) {
-            if (false === in_array($option, $supportedOptions)) {
-                throw new \InvalidArgumentException(
-                    '"' . $option . '" is not a supported option.'
-                );
-            }
-        }
-
-        $reader =  new CsvFileReader($options);
+        $reader =  new CsvFileReader($csvFileReaderOptions);
         return $reader;
     }
 }

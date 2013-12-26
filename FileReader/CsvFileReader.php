@@ -5,22 +5,29 @@
  * @copyright (c) 2013, Sierra Bravo Corp., dba The Nerdery, All rights reserved
  * @license BSD-2-Clause
  */
-
 namespace Nerdery\CsvBundle\FileReader;
 
-use \InvalidArgumentException;
-use Nerdery\CsvBundle\Exception\NoHeaderForDataColumnException;
 use Nerdery\CsvBundle\Exception\FileInvalidException;
+use Nerdery\CsvBundle\Exception\NoHeaderForDataColumnException;
 use Nerdery\CsvBundle\FileReader\CsvFileReaderInterface;
+use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptionsInterface;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
  * CsvFileReader
- * @package Nerdery\CsvBundle\FileReader
+ *
+ * @author Thomas Houfek <thomas.houfek@nerdery.com>
  */
-class CsvFileReader implements CsvFileReaderInterface {
+class CsvFileReader implements CsvFileReaderInterface
+{
+    /**
+     * Options object.
+     *
+     * @var CsvFileReaderOptionsInterface
+     */
+    private $options;
 
     /**
      * File handle.
@@ -36,6 +43,11 @@ class CsvFileReader implements CsvFileReaderInterface {
      */
     private $labelsArray;
 
+    /**
+     * Waiting For Header flag.
+     *
+     * @var bool
+     */
     private $waitingForHeader;
 
     /**
@@ -45,90 +57,19 @@ class CsvFileReader implements CsvFileReaderInterface {
      */
     private $currentLineNumber;
 
-    private $lengthOption;
-
-    private $delimiterOption;
-
-    private $enclosureOption;
-
-    private $escapeOption;
-
-    private $headerPolicyOption;
-
-    private $useLabelsAsKeysOption;
-
-
     /**
      * Constructor.
      *
-     * @param array $options
-     * @throws InvalidArgumentException If given an unsupported option.
-     * @throws FileException If file is not readable.
+     * @param CsvFileReaderOptionsInterface $options
      */
-    public function __construct($options = array())
+    public function __construct(CsvFileReaderOptionsInterface $options)
     {
-        $supportedOptions = [
-            'length',
-            'delimiter',
-            'enclosure',
-            'escape',
-            'headerPolicy',
-            'useLabelsAsKeys',
-        ];
+        $this->options = $options;
 
-        foreach ($options as $option) {
-            if (false === in_array($option, $supportedOptions)) {
-                throw new InvalidArgumentException(
-                    '"' . $option . '" is not a supported option.'
-                );
-            }
-        }
-
-        $this->length       = isset($options['length'])
-                            ? $options['length']
-                            : 0;
-
-        $this->delimiter    = isset($options['delimiter'])
-                            ? $options['delimiter']
-                            : "\t";
-
-        $this->enclosure    = isset($options['enclosure'])
-                            ? $options['enclosure']
-                            : '"';
-
-        $this->escape       = isset($options['escape'])
-                            ? $options['escape']
-                            : '\\';
-
-        $this->useLabelsAsKeys = isset($options['useLabelsAsKeys'])
-            ? $options['useLabelsAsKeys']
-            : true;
-
-        $supportedHeaderPolicies = [
-            'noHeader',
-            'disregardHeader',
-            'correspondingDataRequired',
-            'correspondingDataOptional',
-        ];
-
-        if (isset($options['headerPolicy'])) {
-            $headerPolicyOption = $options['headerPolicy'];
-            if (false === in_array($headerPolicyOption, $supportedHeaderPolicies)) {
-                throw new InvalidArgumentException(
-                    '"' . $headerPolicyOption . '" is not a supported header ' .
-                    'policy option.'
-                );
-            }
-        }
-
-        $this->headerPolicy = isset($options['headerPolicy'])
-                            ? $options['headerPolicy']
-                            : 'correspondingDataOptional';
-
-        if ('noHeader' === $this->headerPolicy) {
-            $this->waitingForHeader = false;
-        } else {
+        if ('noHeader' === $this->options->isHeaderExpected()) {
             $this->waitingForHeader = true;
+        } else {
+            $this->waitingForHeader = false;
         }
 
         $this->currentLineNumber = 0;
@@ -138,6 +79,7 @@ class CsvFileReader implements CsvFileReaderInterface {
      * Open the file.
      *
      * @param string $path
+     * @return void
      * @throws FileNotFoundException
      * @throws FileException
      */
@@ -156,6 +98,8 @@ class CsvFileReader implements CsvFileReaderInterface {
         if (false === $this->fileHandle) {
             throw new FileException('Cannot open file: ' . $path);
         }
+
+        return;
     }
 
     /**
@@ -171,7 +115,8 @@ class CsvFileReader implements CsvFileReaderInterface {
     /**
      * Parse the file.
      */
-    public function parse($path) {
+    public function parse($path)
+    {
         $this->open($path);
 
         $allRowsData = [];
@@ -200,7 +145,7 @@ class CsvFileReader implements CsvFileReaderInterface {
     {
         $data = false;
         try {
-            $data = $this->fileReader->getKeyedRowData();
+            $data = $this->fileReader->getRowData();
             return $data;
         } catch (\Exception $e) {
 
@@ -214,17 +159,20 @@ class CsvFileReader implements CsvFileReaderInterface {
     }
 
     /**
-     * GetKeyedRowData.
+     * GetRowData.
      *
-     * Returns an associative array, where the keys are the labels in the CSV
-     * header row, and the values are the corresponding column data for a row
-     * in the CSV file.
+     * Returns an array of row data.
+     *
+     * Under the 'correspondingDataOptional' and 'correspondingDataRequired'
+     * header policies, this will be an associative array, where the keys are
+     * the labels in the CSV header row, and the values are the corresponding
+     * column data for a row in the CSV file.
      *
      * @return array|null
      * @throws NoHeaderForDataColumnException If a column has no corresponding
      *     header label.
      */
-    public function getKeyedRowData()
+    public function getRowData()
     {
         // If we are expecting a header, parse the line as a header if we
         // have not already.
@@ -255,18 +203,7 @@ class CsvFileReader implements CsvFileReaderInterface {
             );
         }
 
-        $data = null;
-        if (true === $this->useLabelsAsKeys) {
-            // Here we are merging the labels array and the row values array
-            // so that we can retrieve values in the latter using keys supplied by
-            // the former.
-            $data = array_combine(
-                $this->labelsArray,
-                $rowValuesArray
-            );
-        } else {
-            $data = $rowValuesArray;
-        }
+        $data = $this->applyDataHandlingOptions($rowValuesArray);
 
         return $data;
     }
@@ -283,7 +220,8 @@ class CsvFileReader implements CsvFileReaderInterface {
 
 
 
-    protected function assertNoMoreDataThanLabels($rowValuesArray) {
+    protected function assertNoMoreDataThanLabels($rowValuesArray)
+    {
         // Under the 'correspondingDataOptional' header policy, it is
         // acceptable for the number of label elements in the header row
         // to be greater than the number of values in a given data row.
@@ -309,7 +247,8 @@ class CsvFileReader implements CsvFileReaderInterface {
      * @throws NoHeaderForDataColumnException
      * @todo Make appropriate exception.
      */
-    protected function assertDataForAllLabels($rowValuesArray) {
+    protected function assertDataForAllLabels($rowValuesArray)
+    {
         // If the 'enforceDataForAllHeaders' option is set to false, it is
         // acceptable for the number of label elements in the header row
         // to be greater than the number of values in a given data row.
@@ -334,19 +273,28 @@ class CsvFileReader implements CsvFileReaderInterface {
         }
     }
 
-    public function supplyMissingValuesForTrailingLabels($rowValuesArray) {
-        // If the 'enforceDataForAllHeaders' option is set to false, it is
-        // acceptable for the number of label elements in the header row
-        // to be greater than the number of values in a given data row.
-        //
-        // In this case we 'pad' the values in the data row with nulls, so
-        // that when we call array_combine, the length of the row data values
-        // array is the same as the length of the labels array.
-        //
-        // The converse is NOT true: the number of values in the data row
-        // may not be greater than the number of elements in the header --
-        // as this would make it impossible to retrieve a data value using the
-        // header value as a key.  So in this case an exception is thrown.
+    /**
+     * Supply missing values for trailing labels.
+     *
+     * If the 'enforceDataForAllHeaders' option is set to false, it is
+     * acceptable for the number of label elements in the header row
+     * to be greater than the number of values in a given data row.
+     *
+     * In this case we 'pad' the values in the data row with nulls, so
+     * that when we call array_combine, the length of the row data values
+     * array is the same as the length of the labels array.
+
+     * The converse is NOT true: the number of values in the data row
+     * may not be greater than the number of elements in the header --
+     * as this would make it impossible to retrieve a data value using the
+     * header value as a key.  So in this case an exception is thrown.
+     *
+     * @param $rowValuesArray
+     * @return mixed
+     */
+    public function supplyMissingValuesForTrailingLabels($rowValuesArray)
+    {
+
         $labelArrayLength = count($this->labelsArray);
         $valueArrayLength = count($rowValuesArray);
         $arrayLengthDiff  = $labelArrayLength - $valueArrayLength;
@@ -395,10 +343,10 @@ class CsvFileReader implements CsvFileReaderInterface {
         $this->currentLineNumber += 1;
         $valuesArray = fgetcsv(
             $this->fileHandle,
-            $this->length,
-            $this->delimiter,
-            $this->enclosure,
-            $this->escape
+            $this->options->getLengthOption(),
+            $this->options->getDelimiterOption(),
+            $this->options->getEnclosureOption(),
+            $this->options->getEscapeOption()
         );
         return $valuesArray;
     }
@@ -423,10 +371,39 @@ class CsvFileReader implements CsvFileReaderInterface {
      * @param $numNullsToPush
      * @return mixed
      */
-    private function padRowValuesArray($rowValuesArray, $numNullsToPush) {
+    private function padRowValuesArray($rowValuesArray, $numNullsToPush)
+    {
         for ($i = 1; $i <= $numNullsToPush; $i++) {
             array_push($rowValuesArray, null);
         }
         return $rowValuesArray;
+    }
+
+    /**
+     * Apply data handling options.
+     *
+     * Determines, according to the Options, whether each row of file data is
+     * represented by an associative array keyed to the file header labels, or
+     * whether it is represented by a one-dimensional array of values.
+     *
+     * @param $rowValuesArray
+     * @return array
+     */
+    private function applyDataHandlingOptions($rowValuesArray)
+    {
+        $data = null;
+        if (true === $this->options->useLabelsAsKeys()) {
+            // Here we are merging the labels array and the row values array
+            // so that we can retrieve values in the latter using keys supplied by
+            // the former.
+            $data = array_combine(
+                $this->labelsArray,
+                $rowValuesArray
+            );
+            return $data;
+        } else {
+            $data = $rowValuesArray;
+            return $data;
+        }
     }
 }

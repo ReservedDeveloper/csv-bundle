@@ -33,7 +33,7 @@ interface CsvFileReaderInterface {
     public function close();
 
     /**
-     * getKeyedRowData
+     * getRowData
      *
      * Gets an associative array representing a data row in the CSV file.
      * The keys of the associative array are the labels in the CSV header row.
@@ -42,7 +42,7 @@ interface CsvFileReaderInterface {
      *
      * @return mixed
      */
-    public function getKeyedRowData();
+    public function getRowData();
 
 
     /**
