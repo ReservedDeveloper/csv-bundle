@@ -7,12 +7,14 @@
  */
 namespace Nerdery\CsvBundle\FileReader;
 
+use Nerdery\CsvBundle\Event\CsvParseErrorEvent;
 use Nerdery\CsvBundle\Exception\FileInvalidException;
 use Nerdery\CsvBundle\Exception\NoHeaderForDataColumnException;
 use Nerdery\CsvBundle\FileReader\CsvFileReaderInterface;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptions;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptionsInterface;
 
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
@@ -29,6 +31,13 @@ class CsvFileReader implements CsvFileReaderInterface
      * @var CsvFileReaderOptionsInterface
      */
     private $options;
+
+    /**
+     * Event Dispatcher
+     *
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
 
     /**
      * File handle.
@@ -63,9 +72,12 @@ class CsvFileReader implements CsvFileReaderInterface
      *
      * @param CsvFileReaderOptionsInterface $options
      */
-    public function __construct(CsvFileReaderOptionsInterface $options)
-    {
+    public function __construct(
+        CsvFileReaderOptionsInterface $options,
+        EventDispatcherInterface $eventDispatcher
+    ) {
         $this->options           = $options;
+        $this->eventDispatcher   = $eventDispatcher;
         $this->waitingForHeader  = $this->options->isHeaderExpected();
         $this->currentLineNumber = 0;
     }
@@ -140,15 +152,15 @@ class CsvFileReader implements CsvFileReaderInterface
     {
         $data = false;
         try {
-            $data = $this->fileReader->getRowData();
-            return $data;
+            $data = $this->getRowData();
         } catch (\Exception $e) {
 
-            $this->errorReporter->addErrorForLine(
-                $e->getMessage(),
-                $this->fileReader->getCurrentLineNumber()
+            $event = new CsvParseErrorEvent($e, $this->getCurrentLineNumber());
+            $this->eventDispatcher->dispatch(
+                CsvParseErrorEvent::EVENT_KEY,
+                $event
             );
-            return $data;
+
         }
         return $data;
     }

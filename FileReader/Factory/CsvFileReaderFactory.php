@@ -12,6 +12,8 @@ use Nerdery\CsvBundle\FileReader\CsvFileReaderInterface;
 use Nerdery\CsvBundle\FileReader\Factory\CsvFileReaderFactoryInterface;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptions;
 
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+
 /**
  * FileReaderFactory
  *
@@ -21,6 +23,22 @@ use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptions;
  */
 class CsvFileReaderFactory implements CsvFileReaderFactoryInterface
 {
+    /**
+     * Event Dispatcher
+     *
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
+     * Constructor.
+     *
+     * @param EventDispatcherInterface $eventDispatcher
+     */
+    public function __construct(EventDispatcherInterface $eventDispatcher)
+    {
+        $this->eventDispacher = $eventDispatcher;
+    }
 
     /**
      * Create
@@ -32,7 +50,10 @@ class CsvFileReaderFactory implements CsvFileReaderFactoryInterface
     {
         $csvFileReaderOptions = new CsvFileReaderOptions($options);
 
-        $reader =  new CsvFileReader($csvFileReaderOptions);
+        $reader =  new CsvFileReader(
+            $csvFileReaderOptions,
+            $this->eventDispatcher
+        );
         return $reader;
     }
 }
