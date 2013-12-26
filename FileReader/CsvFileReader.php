@@ -68,6 +68,13 @@ class CsvFileReader implements CsvFileReaderInterface
     private $currentLineNumber;
 
     /**
+     * Flag indicating whether the end of the file has been reached.
+     *
+     * @var bool
+     */
+    private $endOfFile;
+
+    /**
      * Constructor.
      *
      * @param CsvFileReaderOptionsInterface $options
@@ -80,6 +87,7 @@ class CsvFileReader implements CsvFileReaderInterface
         $this->eventDispatcher   = $eventDispatcher;
         $this->waitingForHeader  = $this->options->isHeaderExpected();
         $this->currentLineNumber = 0;
+        $this->endOfFile         = false;
     }
 
     /**
@@ -127,14 +135,11 @@ class CsvFileReader implements CsvFileReaderInterface
         $this->open($path);
 
         $allRowsData = [];
-        $endOfFile   = false;
-        while (false === $endOfFile) {
-            $data = $this->parseLine();
+        while (false === $this->endOfFile) {
+            $data = $this->parseNextRow();
 
             if (false !== $data) {
                 $allRowsData[] = $data;
-            } else {
-                $endOfFile = true;
             }
         }
         return $allRowsData;
@@ -143,12 +148,14 @@ class CsvFileReader implements CsvFileReaderInterface
     /**
      * Parse a line of data.
      *
-     * If data can be parsed it is returned as an array.  If instead parsing
-     * throws an exception, we record the error and return false.
+     * If data can be parsed it is returned as an array.  If parsing
+     * throws an exception, we record the error and return false.  False is
+     * also returned if the end of the file was reached, but in this case the
+     * end of file flag should have been set.
      *
-     * @return array|false
+     * @return array|boolean
      */
-    private function parseLine()
+    public function parseNextRow()
     {
         $data = false;
         try {
@@ -192,6 +199,7 @@ class CsvFileReader implements CsvFileReaderInterface
 
         // If $rowValuesArray is false we are presumably at the end of the file.
         if ($rowValuesArray === false) {
+            $this->endOfFile = true;
             return false;
         }
 

@@ -33,7 +33,18 @@ interface CsvFileReaderInterface {
     public function close();
 
     /**
-     * getRowData
+     * Parse a file.
+     *
+     * Convenience function which calls open() and then parseNextRow()
+     * repeatedly until the file contains no more rows.
+     *
+     * @param $path
+     * @return mixed
+     */
+    public function parse($path);
+
+    /**
+     * parseNextRow
      *
      * Gets an associative array representing a data row in the CSV file.
      * The keys of the associative array are the labels in the CSV header row.
@@ -42,7 +53,7 @@ interface CsvFileReaderInterface {
      *
      * @return mixed
      */
-    public function getRowData();
+    public function parseNextRow();
 
 
     /**
@@ -53,5 +64,7 @@ interface CsvFileReaderInterface {
      * @return mixed
      */
     public function getCurrentLineNumber();
+
+
 
 }
