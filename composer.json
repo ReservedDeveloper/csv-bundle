@@ -1,0 +1,23 @@
+{
+    "name": "nerdery/csv-bundle",
+    "description": "Symfony bundle for handling CSV files.",
+    "keywords": ["csv"],
+    "homepage": "https://github.com/thenerdery/csv-bundle",
+    "type": "symfony-bundle",
+    "license": "BSD-2-Clause",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Thomas Houfek",
+            "email": "thomas.houfek@nerdery.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "symfony/symfony": ">=2.1.0"
+    },
+    "autoload": {
+        "psr-0": { "Nerdery\\CsvBundle": "" }
+    },
+    "target-dir": "Nerdery/CsvBundle"
+}

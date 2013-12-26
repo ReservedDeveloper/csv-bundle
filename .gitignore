@@ -1,3 +1,6 @@
+vendor
+composer.lock
+
 # IDE specific project files
 .nbproject
 *.iml
