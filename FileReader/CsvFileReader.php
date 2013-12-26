@@ -188,7 +188,7 @@ class CsvFileReader implements CsvFileReaderInterface
             return false;
         }
 
-        if ('correspondingDataOptional' == $this->headerPolicy) {
+        if ('correspondingDataOptional' == $this->headerPolicyOption) {
             $this->assertNoMoreDataThanLabels(
                 $rowValuesArray
             );
@@ -197,7 +197,7 @@ class CsvFileReader implements CsvFileReaderInterface
             );
         }
 
-        if ('correspondingDataRequired' == $this->headerPolicy) {
+        if ('correspondingDataRequired' == $this->headerPolicyOption) {
             $this->assertDataForAllLabels(
                 $rowValuesArray
             );
@@ -211,8 +211,8 @@ class CsvFileReader implements CsvFileReaderInterface
     public function parseHeader()
     {
         $headerArray= $this->convertRowToValuesArray();
-        if ('correspondingDataRequired' == $this->headerPolicy ||
-            'correspondingDataOptional' == $this->headerPolicy
+        if ('correspondingDataRequired' == $this->headerPolicyOption ||
+            'correspondingDataOptional' == $this->headerPolicyOption
         ) {
             $this->createLabelsArray($headerArray);
         }
