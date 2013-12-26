@@ -5,3 +5,14 @@ services:
     nerdery_csv.factory.file_reader:
         class: %nerdery_csv.factory.file_reader.class%
         arguments: []
+
+    nerdery_csv.error_reporter:
+        class: Nerdery\CsvBundle\Error\Reporter.php
+        arguments: []
+
+    nerdery_csv.subscriber.broker_modification:
+        class: Nerdery\CsvBundle\Subscriber\ParseErrorSubscriber
+    arguments:
+        - @nerdery_csv.error_reporter
+    tags:
+        - { name: kernel.event_subscriber }

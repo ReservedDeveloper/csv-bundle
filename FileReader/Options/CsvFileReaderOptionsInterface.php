@@ -1,10 +1,9 @@
 <?php
 /**
- * Created by JetBrains PhpStorm.
- * User: thoufek
- * Date: 12/26/13
- * Time: 2:11 PM
- * To change this template use File | Settings | File Templates.
+ * CsvFileReaderOptionsInterface.php
+ *
+ * @copyright (c) 2013, Sierra Bravo Corp., dba The Nerdery, All rights reserved
+ * @license BSD-2-Clause
  */
 
 namespace Nerdery\CsvBundle\FileReader\Options;

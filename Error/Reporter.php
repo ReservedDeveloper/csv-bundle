@@ -5,7 +5,7 @@
  * @copyright (c) 2013, Sierra Bravo Corp., dba The Nerdery, All rights reserved
  * @license BSD-2-Clause
  */
-namespace RetentionSolutions\IntelligentPath\WorkOrderImportBundle\Importer\Error;
+namespace Nerdery\CsvBundle\Error;
 
 /**
  * Reporter
@@ -79,7 +79,7 @@ class Reporter
      * @param string $errorMsg
      * @param int $lineNumber
      */
-    private function addLineError($errorMsg, $lineNumber)
+    public function addLineError($errorMsg, $lineNumber)
     {
 
         if (false === isset($this->lineErrors["$lineNumber"])) {
