@@ -9,6 +9,7 @@
 namespace Nerdery\CsvBundle\FileReader\Options;
 
 use \InvalidArgumentException;
+use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptionsInterface;
 
 /**
  * CsvFileReaderOptions
@@ -16,7 +17,7 @@ use \InvalidArgumentException;
  *
  * @author Thomas Houfek <thomas.houfek@nerdery.com>
  */
-class CsvFileReaderOptions
+class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
 {
     const OPTION_LENGTH             = 'length';
     const OPTION_DELIMITER          = 'delimiter';
