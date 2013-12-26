@@ -1,0 +1,8 @@
+# IDE specific project files
+.nbproject
+*.iml
+*.ipr
+*.iws
+.idea/
+.classpath
+.project

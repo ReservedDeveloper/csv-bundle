@@ -1,0 +1,7 @@
+parameters:
+    rs_csv.factory.file_reader.class: Nerdery\CsvBundle\FileReader\Factory\FileReaderFactory
+
+services:
+    rs_csv.factory.file_reader:
+        class: %rs_csv.factory.file_reader.class%
+        arguments: []
