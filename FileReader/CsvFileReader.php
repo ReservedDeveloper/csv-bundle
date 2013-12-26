@@ -65,14 +65,8 @@ class CsvFileReader implements CsvFileReaderInterface
      */
     public function __construct(CsvFileReaderOptionsInterface $options)
     {
-        $this->options = $options;
-
-        if ('noHeader' === $this->options->isHeaderExpected()) {
-            $this->waitingForHeader = true;
-        } else {
-            $this->waitingForHeader = false;
-        }
-
+        $this->options           = $options;
+        $this->waitingForHeader  = $this->options->isHeaderExpected();
         $this->currentLineNumber = 0;
     }
 
@@ -219,6 +213,7 @@ class CsvFileReader implements CsvFileReaderInterface
     public function parseHeader()
     {
         $headerArray= $this->convertRowToValuesArray();
+
         if (true == $this->options->useLabelsAsKeys()) {
             $this->createLabelsArray($headerArray);
         }
