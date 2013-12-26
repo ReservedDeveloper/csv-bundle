@@ -37,7 +37,7 @@ class CsvFileReaderFactory implements CsvFileReaderFactoryInterface
      */
     public function __construct(EventDispatcherInterface $eventDispatcher)
     {
-        $this->eventDispacher = $eventDispatcher;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**

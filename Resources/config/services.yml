@@ -10,8 +10,9 @@ services:
 
     nerdery_csv.error_reporter:
         class: %nerdery_csv.error_reporter.class%
+        arguments:
 
-    nerdery_csv.subscriber.parse_error
+    nerdery_csv.subscriber.parse_error:
         class: %nerdery_csv.subscriber.parse_error.class%
         arguments:
             - @nerdery_csv.error_reporter
