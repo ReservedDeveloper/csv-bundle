@@ -254,4 +254,14 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     {
         return $this->lengthOption;
     }
+
+    /**
+     * Get the Header Policy option.
+     *
+     * @return string
+     */
+    public function getHeaderPolicyOption()
+    {
+        return $this->headerPolicyOption;
+    }
 }

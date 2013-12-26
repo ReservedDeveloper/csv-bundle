@@ -55,4 +55,11 @@ interface CsvFileReaderOptionsInterface
      * @return int
      */
     public function getLengthOption();
+
+    /**
+     * Get the Header Policy option.
+     *
+     * @return string
+     */
+    public function getHeaderPolicyOption();
 }

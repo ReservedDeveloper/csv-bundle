@@ -10,6 +10,7 @@ namespace Nerdery\CsvBundle\FileReader;
 use Nerdery\CsvBundle\Exception\FileInvalidException;
 use Nerdery\CsvBundle\Exception\NoHeaderForDataColumnException;
 use Nerdery\CsvBundle\FileReader\CsvFileReaderInterface;
+use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptions;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptionsInterface;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
@@ -188,7 +189,9 @@ class CsvFileReader implements CsvFileReaderInterface
             return false;
         }
 
-        if ('correspondingDataOptional' == $this->headerPolicyOption) {
+        if (CsvFileReaderOptions::HEADER_POLICY_SUB_DATA_OPTIONAL ==
+            $this->options->getHeaderPolicyOption()
+        ) {
             $this->assertNoMoreDataThanLabels(
                 $rowValuesArray
             );
@@ -197,7 +200,9 @@ class CsvFileReader implements CsvFileReaderInterface
             );
         }
 
-        if ('correspondingDataRequired' == $this->headerPolicyOption) {
+        if (CsvFileReaderOptions::HEADER_POLICY_SUB_DATA_REQUIRED ==
+            $this->options->getHeaderPolicyOption()
+        ) {
             $this->assertDataForAllLabels(
                 $rowValuesArray
             );
@@ -208,12 +213,13 @@ class CsvFileReader implements CsvFileReaderInterface
         return $data;
     }
 
+    /**
+     * Parse the CSV file header.
+     */
     public function parseHeader()
     {
         $headerArray= $this->convertRowToValuesArray();
-        if ('correspondingDataRequired' == $this->headerPolicyOption ||
-            'correspondingDataOptional' == $this->headerPolicyOption
-        ) {
+        if (true == $this->options->useLabelsAsKeys()) {
             $this->createLabelsArray($headerArray);
         }
     }
@@ -354,6 +360,7 @@ class CsvFileReader implements CsvFileReaderInterface
     /**
      * Create the Labels array
      *
+     * @paam array $headerArray
      * @throws FileInvalidException If Labels Array cannot be generated.
      */
     private function createLabelsArray(array $headerArray)
@@ -367,8 +374,8 @@ class CsvFileReader implements CsvFileReaderInterface
     /**
      * Pad row values array.
      *
-     * @param $rowValuesArray
-     * @param $numNullsToPush
+     * @param array $rowValuesArray
+     * @param int $numNullsToPush
      * @return mixed
      */
     private function padRowValuesArray($rowValuesArray, $numNullsToPush)
@@ -386,7 +393,7 @@ class CsvFileReader implements CsvFileReaderInterface
      * represented by an associative array keyed to the file header labels, or
      * whether it is represented by a one-dimensional array of values.
      *
-     * @param $rowValuesArray
+     * @param array $rowValuesArray
      * @return array
      */
     private function applyDataHandlingOptions($rowValuesArray)
