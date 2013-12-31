@@ -29,6 +29,12 @@ class Reporter
      */
     private $lineErrors;
 
+    /**
+     * Has error
+     *
+     * @var bool
+     */
+    private $hasError;
 
     /**
      * Constructor.
@@ -37,6 +43,7 @@ class Reporter
     {
         $this->lineErrors    = [];
         $this->generalErrors = [];
+        $this->hasError      = false;
     }
 
     /**
@@ -51,7 +58,7 @@ class Reporter
      */
     public function addError($errorMsg, $lineNumber = null)
     {
-
+        $this->hasError = true;
         if (null === $lineNumber) {
             $this->addGeneralError($errorMsg);
         } else {
@@ -110,5 +117,15 @@ class Reporter
     public function getLineErrors()
     {
         return $this->lineErrors;
+    }
+
+    /**
+     * Has error?
+     *
+     * @return boolean
+     */
+    public function hasError()
+    {
+        return $this->hasError;
     }
 }
