@@ -10,6 +10,7 @@ namespace Nerdery\CsvBundle\FileReader\Options;
 
 use \InvalidArgumentException;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptionsInterface;
+use Nerdery\CsvBundle\FileReader\Validator\CsvFileValidatorInterface;
 
 /**
  * CsvFileReaderOptions
@@ -25,6 +26,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     const OPTION_ESCAPE             = 'escape';
     const OPTION_HEADER_POLICY      = 'headerPolicy';
     const OPTION_USE_LABELS_AS_KEYS = 'useLabelsAsKeys';
+    const OPTION_VALIDATION         = 'validation';
 
     const DEFAULT_LENGTH = 0;
     const DEFAULT_DELIMITER = "\t";
@@ -36,6 +38,8 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     const HEADER_POLICY_SUB_DATA_OPTIONAL = "subDataOptional";
     const HEADER_POLICY_SUB_DATA_REQUIRED = "subDataRequired";
     const DEFAULT_HEADER_POLICY           = 'subDataOptional';
+
+    const DEFAULT_VALIDATION = null;
 
     const DEFAULT_USE_LABELS_AS_KEYS = true;
 
@@ -51,6 +55,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
         self::OPTION_ESCAPE,
         self::OPTION_HEADER_POLICY,
         self::OPTION_USE_LABELS_AS_KEYS,
+        self::OPTION_VALIDATION,
     ];
 
     /**
@@ -101,6 +106,13 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     private $headerPolicyOption;
 
     /**
+     * Validation Option
+     *
+     * @var CsvFileValidatorInterface
+     */
+    private $validationOption;
+
+    /**
      * Use Labels as Keys Option.
      *
      * @var bool
@@ -125,6 +137,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
 
         $this->initStandardCsvOptions($options);
         $this->initHeaderPolicyOption($options);
+        $this->initValidationOption($options);
         $this->initDataHandlingOptions($options);
     }
 
@@ -190,6 +203,28 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
             : self::DEFAULT_HEADER_POLICY;
     }
 
+    /**
+     * Initialize the validation option.
+     *
+     * @param $options
+     * @throws \InvalidArgumentException
+     */
+    private function initValidationOption(array $options)
+    {
+        if (isset($options[self::OPTION_VALIDATION])) {
+            $validationOption = $options[self::OPTION_VALIDATION];
+            if (!($validationOption instanceof CsvFileValidatorInterface)) {
+                throw new InvalidArgumentException(
+                    '"' . $validationOption . '" is not a supported header ' .
+                    'validation option.'
+                );
+            }
+        }
+
+        $this->validationOption = isset($options[self::OPTION_VALIDATION])
+            ? $options[self::OPTION_VALIDATION]
+            : self::DEFAULT_VALIDATION;
+    }
 
     /**
      * Is header expected?
@@ -263,5 +298,15 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     public function getHeaderPolicyOption()
     {
         return $this->headerPolicyOption;
+    }
+
+    /**
+     * Get the Validation option
+     *
+     * @return CsvFileValidatorInterface|null
+     */
+    public function getValidationOption()
+    {
+        return $this->validationOption;
     }
 }

@@ -234,6 +234,10 @@ class CsvFileReader implements CsvFileReaderInterface
     {
         $headerArray= $this->convertRowToValuesArray();
 
+        if($this->options->getValidationOption()){
+            $this->options->getValidationOption()->validateHeader($headerArray);
+        }
+
         if (true == $this->options->useLabelsAsKeys()) {
             $this->createLabelsArray($headerArray);
         }
