@@ -3,12 +3,13 @@
  * CsvFileReader.php
  *
  * @copyright (c) 2013, Sierra Bravo Corp., dba The Nerdery, All rights reserved
- * @license BSD-2-Clause
+ * @license   BSD-2-Clause
  */
 namespace Nerdery\CsvBundle\FileReader;
 
 use Nerdery\CsvBundle\Event\CsvParseErrorEvent;
 use Nerdery\CsvBundle\Exception\FileInvalidException;
+use Nerdery\CsvBundle\Exception\InvalidFileHeaderException;
 use Nerdery\CsvBundle\Exception\NoHeaderForDataColumnException;
 use Nerdery\CsvBundle\FileReader\CsvFileReaderInterface;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptions;
@@ -22,6 +23,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
  * CsvFileReader
  *
  * @author Thomas Houfek <thomas.houfek@nerdery.com>
+ * @author Daniel Lakes <dlakes@nerdery.com>
  */
 class CsvFileReader implements CsvFileReaderInterface
 {
@@ -48,7 +50,7 @@ class CsvFileReader implements CsvFileReaderInterface
 
     /**
      * Labels Array
-     * 
+     *
      * @var array
      */
     private $labelsArray;
@@ -94,6 +96,7 @@ class CsvFileReader implements CsvFileReaderInterface
      * Open the file.
      *
      * @param string $path
+     *
      * @return void
      * @throws FileNotFoundException
      * @throws FileException
@@ -142,6 +145,7 @@ class CsvFileReader implements CsvFileReaderInterface
                 $allRowsData[] = $data;
             }
         }
+
         return $allRowsData;
     }
 
@@ -153,6 +157,7 @@ class CsvFileReader implements CsvFileReaderInterface
      * also returned if the end of the file was reached, but in this case the
      * end of file flag should have been set.
      *
+     * @throws InvalidFileHeaderException
      * @return array|boolean
      */
     public function parseNextRow()
@@ -161,6 +166,9 @@ class CsvFileReader implements CsvFileReaderInterface
         try {
             $data = $this->getRowData();
         } catch (\Exception $e) {
+            if($e instanceof InvalidFileHeaderException){
+                throw $e; //we want this to stop the parse, as all other rows will be affected by it
+            }
 
             $event = new CsvParseErrorEvent($e, $this->getCurrentLineNumber());
             $this->eventDispatcher->dispatch(
@@ -169,6 +177,7 @@ class CsvFileReader implements CsvFileReaderInterface
             );
 
         }
+
         return $data;
     }
 
@@ -200,6 +209,7 @@ class CsvFileReader implements CsvFileReaderInterface
         // If $rowValuesArray is false we are presumably at the end of the file.
         if ($rowValuesArray === false) {
             $this->endOfFile = true;
+
             return false;
         }
 
@@ -232,17 +242,23 @@ class CsvFileReader implements CsvFileReaderInterface
      */
     public function parseHeader()
     {
-        $headerArray= $this->convertRowToValuesArray();
+        $headerArray = $this->convertRowToValuesArray();
 
-        if($this->options->getValidationOption()){
-            $this->options->getValidationOption()->validateHeader($headerArray);
-        }
+        if (is_array($headerArray)) {
+            if ($this->options->getValidationOption()
+                && !$this->options->getValidationOption()->validateHeader(
+                    $headerArray
+                )
+            ) {
+                $this->waitingForHeader = false; //make sure we don't keep looking for a header
+                throw new InvalidFileHeaderException();
+            }
 
-        if (true == $this->options->useLabelsAsKeys()) {
-            $this->createLabelsArray($headerArray);
+            if (true == $this->options->useLabelsAsKeys()) {
+                $this->createLabelsArray($headerArray);
+            }
         }
     }
-
 
 
     protected function assertNoMoreDataThanLabels($rowValuesArray)
@@ -269,6 +285,7 @@ class CsvFileReader implements CsvFileReaderInterface
 
     /**
      * @param $rowValuesArray
+     *
      * @throws NoHeaderForDataColumnException
      * @todo Make appropriate exception.
      */
@@ -308,13 +325,13 @@ class CsvFileReader implements CsvFileReaderInterface
      * In this case we 'pad' the values in the data row with nulls, so
      * that when we call array_combine, the length of the row data values
      * array is the same as the length of the labels array.
-
      * The converse is NOT true: the number of values in the data row
      * may not be greater than the number of elements in the header --
      * as this would make it impossible to retrieve a data value using the
      * header value as a key.  So in this case an exception is thrown.
      *
      * @param $rowValuesArray
+     *
      * @return mixed
      */
     public function supplyMissingValuesForTrailingLabels($rowValuesArray)
@@ -373,6 +390,7 @@ class CsvFileReader implements CsvFileReaderInterface
             $this->options->getEnclosureOption(),
             $this->options->getEscapeOption()
         );
+
         return $valuesArray;
     }
 
@@ -394,7 +412,8 @@ class CsvFileReader implements CsvFileReaderInterface
      * Pad row values array.
      *
      * @param array $rowValuesArray
-     * @param int $numNullsToPush
+     * @param int   $numNullsToPush
+     *
      * @return mixed
      */
     private function padRowValuesArray($rowValuesArray, $numNullsToPush)
@@ -402,6 +421,7 @@ class CsvFileReader implements CsvFileReaderInterface
         for ($i = 1; $i <= $numNullsToPush; $i++) {
             array_push($rowValuesArray, null);
         }
+
         return $rowValuesArray;
     }
 
@@ -413,6 +433,7 @@ class CsvFileReader implements CsvFileReaderInterface
      * whether it is represented by a one-dimensional array of values.
      *
      * @param array $rowValuesArray
+     *
      * @return array
      */
     private function applyDataHandlingOptions($rowValuesArray)
@@ -426,9 +447,11 @@ class CsvFileReader implements CsvFileReaderInterface
                 $this->labelsArray,
                 $rowValuesArray
             );
+
             return $data;
         } else {
             $data = $rowValuesArray;
+
             return $data;
         }
     }

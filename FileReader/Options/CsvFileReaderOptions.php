@@ -3,7 +3,7 @@
  * CsvFileReaderOptions.php
  *
  * @copyright (c) 2013, Sierra Bravo Corp., dba The Nerdery, All rights reserved
- * @license BSD-2-Clause
+ * @license   BSD-2-Clause
  */
 
 namespace Nerdery\CsvBundle\FileReader\Options;
@@ -17,6 +17,7 @@ use Nerdery\CsvBundle\FileReader\Validator\CsvFileValidatorInterface;
  *
  *
  * @author Thomas Houfek <thomas.houfek@nerdery.com>
+ * @author Daniel Lakes <dlakes@nerdery.com>
  */
 class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
 {
@@ -28,7 +29,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     const OPTION_USE_LABELS_AS_KEYS = 'useLabelsAsKeys';
     const OPTION_VALIDATION         = 'validation';
 
-    const DEFAULT_LENGTH = 0;
+    const DEFAULT_LENGTH    = 0;
     const DEFAULT_DELIMITER = "\t";
     const DEFAULT_ENCLOSURE = '"';
     const DEFAULT_ESCAPE    = '\\';
@@ -123,14 +124,15 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
      * Constructor.
      *
      * @param array $options
+     *
      * @throws InvalidArgumentException If given an unsupported option.
      */
     public function __construct($options = array())
     {
-        foreach ($options as $option) {
-            if (false === in_array($option, $this->supportedOptions)) {
+        foreach ($options as $optionName => $option) {
+            if (false === in_array($optionName, $this->supportedOptions)) {
                 throw new InvalidArgumentException(
-                    '"' . $option . '" is not a supported option.'
+                    '"' . $optionName . '" is not a supported option.'
                 );
             }
         }
@@ -181,6 +183,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
      * Initialize the header policy options.
      *
      * @param $options
+     *
      * @throws \InvalidArgumentException
      */
     private function initHeaderPolicyOption(array $options)
@@ -188,9 +191,10 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
         if (isset($options[self::OPTION_HEADER_POLICY])) {
             $headerPolicyOption = $options[self::OPTION_HEADER_POLICY];
             if (false === in_array(
-                $headerPolicyOption,
-                $this->supportedHeaderPolicies
-            )) {
+                    $headerPolicyOption,
+                    $this->supportedHeaderPolicies
+                )
+            ) {
                 throw new InvalidArgumentException(
                     '"' . $headerPolicyOption . '" is not a supported header ' .
                     'policy option.'
@@ -207,6 +211,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
      * Initialize the validation option.
      *
      * @param $options
+     *
      * @throws \InvalidArgumentException
      */
     private function initValidationOption(array $options)
@@ -215,8 +220,8 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
             $validationOption = $options[self::OPTION_VALIDATION];
             if (!($validationOption instanceof CsvFileValidatorInterface)) {
                 throw new InvalidArgumentException(
-                    '"' . $validationOption . '" is not a supported header ' .
-                    'validation option.'
+                    'Provided validator must implement ' .
+                    'Nerdery\CsvBundle\FileReader\Validator\CsvFileValidatorInterface.'
                 );
             }
         }
