@@ -10,7 +10,8 @@ namespace Nerdery\CsvBundle\FileReader\Options;
 
 use \InvalidArgumentException;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptionsInterface;
-use Nerdery\CsvBundle\FileReader\Validator\CsvFileValidatorInterface;
+use Nerdery\CsvBundle\FileReader\Parser\AbstractCsvFileParser;
+use Nerdery\CsvBundle\FileReader\Validator\AbstractCsvFileValidator;
 
 /**
  * CsvFileReaderOptions
@@ -28,6 +29,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     const OPTION_HEADER_POLICY      = 'headerPolicy';
     const OPTION_USE_LABELS_AS_KEYS = 'useLabelsAsKeys';
     const OPTION_VALIDATION         = 'validation';
+    const OPTION_PARSER             = 'parser';
 
     const DEFAULT_LENGTH    = 0;
     const DEFAULT_DELIMITER = "\t";
@@ -41,6 +43,8 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     const DEFAULT_HEADER_POLICY           = 'subDataOptional';
 
     const DEFAULT_VALIDATION = null;
+
+    const DEFAULT_PARSER = null;
 
     const DEFAULT_USE_LABELS_AS_KEYS = true;
 
@@ -57,6 +61,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
         self::OPTION_HEADER_POLICY,
         self::OPTION_USE_LABELS_AS_KEYS,
         self::OPTION_VALIDATION,
+        self::OPTION_PARSER,
     ];
 
     /**
@@ -109,9 +114,16 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     /**
      * Validation Option
      *
-     * @var CsvFileValidatorInterface
+     * @var AbstractCsvFileValidator
      */
     private $validationOption;
+
+    /**
+     * Parser Option
+     *
+     * @var AbstractCsvFileParser
+     */
+    private $parserOption;
 
     /**
      * Use Labels as Keys Option.
@@ -140,6 +152,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
         $this->initStandardCsvOptions($options);
         $this->initHeaderPolicyOption($options);
         $this->initValidationOption($options);
+        $this->initParserOption($options);
         $this->initDataHandlingOptions($options);
     }
 
@@ -218,7 +231,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     {
         if (isset($options[self::OPTION_VALIDATION])) {
             $validationOption = $options[self::OPTION_VALIDATION];
-            if (!($validationOption instanceof CsvFileValidatorInterface)) {
+            if (!($validationOption instanceof AbstractCsvFileValidator)) {
                 throw new InvalidArgumentException(
                     'Provided validator must implement ' .
                     'Nerdery\CsvBundle\FileReader\Validator\CsvFileValidatorInterface.'
@@ -229,6 +242,30 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
         $this->validationOption = isset($options[self::OPTION_VALIDATION])
             ? $options[self::OPTION_VALIDATION]
             : self::DEFAULT_VALIDATION;
+    }
+
+    /**
+     * Initialize the parser option.
+     *
+     * @param $options
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function initParserOption(array $options)
+    {
+        if (isset($options[self::OPTION_PARSER])) {
+            $parserOption = $options[self::OPTION_PARSER];
+            if (!($parserOption instanceof AbstractCsvFileParser)) {
+                throw new InvalidArgumentException(
+                    'Provided parser must implement ' .
+                    'Nerdery\CsvBundle\FileReader\Parser\CsvFileParserInterface.'
+                );
+            }
+        }
+
+        $this->parserOption = isset($options[self::OPTION_PARSER])
+            ? $options[self::OPTION_PARSER]
+            : self::DEFAULT_PARSER;
     }
 
     /**
@@ -308,10 +345,20 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     /**
      * Get the Validation option
      *
-     * @return CsvFileValidatorInterface|null
+     * @return AbstractCsvFileValidator|null
      */
     public function getValidationOption()
     {
         return $this->validationOption;
+    }
+
+    /**
+     * Get the Parser option
+     *
+     * @return AbstractCsvFileParser|null
+     */
+    public function getParserOption()
+    {
+        return $this->parserOption;
     }
 }

@@ -8,8 +8,8 @@
 
 namespace Nerdery\CsvBundle\FileReader\Options;
 
-
-use Nerdery\CsvBundle\FileReader\Validator\CsvFileValidatorInterface;
+use Nerdery\CsvBundle\FileReader\Parser\AbstractCsvFileParser;
+use Nerdery\CsvBundle\FileReader\Validator\AbstractCsvFileValidator;
 
 interface CsvFileReaderOptionsInterface
 {
@@ -67,7 +67,14 @@ interface CsvFileReaderOptionsInterface
     /**
      * Get the Validation option
      *
-     * @return CsvFileValidatorInterface|null
+     * @return AbstractCsvFileValidator|null
      */
     public function getValidationOption();
+
+    /**
+     * Get the Parser option
+     *
+     * @return AbstractCsvFileParser|null
+     */
+    public function getParserOption();
 }

@@ -1,30 +1,32 @@
 <?php
 /**
- * InvalidFileHeaderException.php
+ * FileInvalidRowException.php
  *
+ * @package Nerdery\CsvBundle\Exception
  * @copyright (c) 2013, Sierra Bravo Corp., dba The Nerdery, All rights reserved
  * @license BSD-2-Clause
  */
+
 namespace Nerdery\CsvBundle\Exception;
 
 use \Exception;
 
 /**
- * InvalidFileHeaderException
+ * InvalidDataFieldException
  *
+ * @package Nerdery\CsvBundle\Exception
  * @author Daniel Lakes <dlakes@nerdery.com>
- */
-class InvalidFileHeaderException extends Exception
+ */ 
+class FileInvalidRowException extends Exception
 {
     /**
-     * constructor
-     * @param string $message - message to display
+     * Constructor.
      */
     public function __construct($message = null)
     {
         $message = $message ?
             $message :
-            'The specified file headers do not match those dictated by the options.';
+            'The file appears to be in an invalid format.';
 
         parent::__construct($message);
     }

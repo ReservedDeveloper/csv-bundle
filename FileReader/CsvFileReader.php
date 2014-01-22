@@ -9,12 +9,13 @@ namespace Nerdery\CsvBundle\FileReader;
 
 use Nerdery\CsvBundle\Event\CsvParseErrorEvent;
 use Nerdery\CsvBundle\Exception\FileInvalidException;
-use Nerdery\CsvBundle\Exception\InvalidFileHeaderException;
+use Nerdery\CsvBundle\Exception\FileInvalidRowException;
 use Nerdery\CsvBundle\Exception\NoHeaderForDataColumnException;
 use Nerdery\CsvBundle\FileReader\CsvFileReaderInterface;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptions;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptionsInterface;
-
+use Nerdery\CsvBundle\FileReader\Response\AbstractReaderResponse;
+use Nerdery\CsvBundle\FileReader\Validator\ValidatorResponse;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -80,6 +81,7 @@ class CsvFileReader implements CsvFileReaderInterface
      * Constructor.
      *
      * @param CsvFileReaderOptionsInterface $options
+     * @param EventDispatcherInterface      $eventDispatcher
      */
     public function __construct(
         CsvFileReaderOptionsInterface $options,
@@ -157,7 +159,7 @@ class CsvFileReader implements CsvFileReaderInterface
      * also returned if the end of the file was reached, but in this case the
      * end of file flag should have been set.
      *
-     * @throws InvalidFileHeaderException
+     * @throws FileInvalidException
      * @return array|boolean
      */
     public function parseNextRow()
@@ -166,7 +168,7 @@ class CsvFileReader implements CsvFileReaderInterface
         try {
             $data = $this->getRowData();
         } catch (\Exception $e) {
-            if($e instanceof InvalidFileHeaderException){
+            if($e instanceof FileInvalidException){
                 throw $e; //we want this to stop the parse, as all other rows will be affected by it
             }
 
@@ -175,7 +177,6 @@ class CsvFileReader implements CsvFileReaderInterface
                 CsvParseErrorEvent::EVENT_KEY,
                 $event
             );
-
         }
 
         return $data;
@@ -234,6 +235,24 @@ class CsvFileReader implements CsvFileReaderInterface
 
         $data = $this->applyDataHandlingOptions($rowValuesArray);
 
+        if($this->options->getValidationOption()){
+            $response = $this->options->getValidationOption()->validateDataRow($data);
+
+            if(!$response->isValid()){
+                $this->handleResponseError($response);
+            }
+        }
+
+        if($this->options->getParserOption()){
+            $response = $this->options->getParserOption()->parseRow($data);
+
+            if($response->isValid()){
+                $data = $response->getParsedData();
+            } else {
+                $this->handleResponseError($response, false);
+            }
+        }
+
         return $data;
     }
 
@@ -245,13 +264,16 @@ class CsvFileReader implements CsvFileReaderInterface
         $headerArray = $this->convertRowToValuesArray();
 
         if (is_array($headerArray)) {
-            if ($this->options->getValidationOption()
-                && !$this->options->getValidationOption()->validateHeader(
-                    $headerArray
-                )
-            ) {
-                $this->waitingForHeader = false; //make sure we don't keep looking for a header
-                throw new InvalidFileHeaderException();
+            if($this->options->getValidationOption()){
+                $response = $this->options->getValidationOption()->validateHeader($headerArray);
+
+                if(!$response->isValid())
+                {
+                    //add error messages to the queue
+                    //we don't want our reading to continue,
+                    //as invalid header is a breaker
+                    $this->handleResponseError($response, true);
+                }
             }
 
             if (true == $this->options->useLabelsAsKeys()) {
@@ -453,6 +475,34 @@ class CsvFileReader implements CsvFileReaderInterface
             $data = $rowValuesArray;
 
             return $data;
+        }
+    }
+
+    /**
+     * handles parsing of our response errors, outputting messages
+     * for each affected item. Then outputs a generic error to halt processing
+     * of the row
+     *
+     * @param AbstractReaderResponse $response
+     * @param bool                   $isBreaking - whether or not this is a recoverable/unrecoverable error
+     *
+     * @throws \Nerdery\CsvBundle\Exception\FileInvalidRowException
+     * @throws \Nerdery\CsvBundle\Exception\FileInvalidException
+     *
+     */
+    protected function handleResponseError(AbstractReaderResponse $response, $isBreaking = false){
+        foreach($response->getErrors() as $exception){
+            $event = new CsvParseErrorEvent($exception, $this->getCurrentLineNumber());
+            $this->eventDispatcher->dispatch(
+                CsvParseErrorEvent::EVENT_KEY,
+                $event
+            );
+        }
+
+        if($isBreaking){
+            throw new FileInvalidException('Line ' . $this->getCurrentLineNumber() . ' has encountered an unrecoverable error. Terminating processing.');
+        } else {
+            throw new FileInvalidRowException('Line ' . $this->getCurrentLineNumber() . ' has encountered an error and will be skipped');
         }
     }
 }
