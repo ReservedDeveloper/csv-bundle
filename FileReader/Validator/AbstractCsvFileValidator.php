@@ -24,9 +24,13 @@ abstract class AbstractCsvFileValidator
     /**
      * validate the header row
      *
+     * as header rows do not have the same
+     * nuance as data rows, decided to cast as
+     * final to help ensure consistent return type
+     *
      * @param array $headerRow
      *
-     * @return ValidatorResponse
+     * @return ValidatorResponse $response
      */
     public final function validateHeader(array $headerRow)
     {
@@ -51,14 +55,46 @@ abstract class AbstractCsvFileValidator
 
     /**
      * validate non-header/data rows
+     * Checks for validation on each field, then checks
+     * for validation on multiple/joined fields
+     *
+     * Decided not to cast as final in the event that
+     * a validation situation comes up not covered by one
+     * of the below called methods
+     *
+     * As such, any classes extending this method should
+     * pay close attention to the method return signature
+     * for compatibility purposes
+     *
+     *
      *
      * @param array $rowData - the array of row data to be checked
      *
-     * @return ValidatorResponse
+     * @return ValidatorResponse $response
      */
     public function validateDataRow(array $rowData)
     {
         $response = new ValidatorResponse();
+
+        $response = $this->validateDataRowFields($rowData, $response);
+        $response = $this->validateDataRowMultiFields($rowData, $response);
+
+        return $response;
+    }
+
+    /**
+     * validates each pair in the provided $rowData
+     *
+     * @param array             $rowData
+     * @param ValidatorResponse $response - a preexisting response object to modify, if any
+     * @return ValidatorResponse $response
+     */
+    protected final function validateDataRowFields(array $rowData, ValidatorResponse $response = null)
+    {
+        $response = $response
+            ? $response
+            : new ValidatorResponse();
+
         foreach ($rowData as $dataFieldKey => $dataFieldValue) {
             if (!$this->validateDataField($dataFieldKey, $dataFieldValue)) {
                 $response->addErrorForField($dataFieldKey, new InvalidDataFieldException($dataFieldKey, $dataFieldValue));
@@ -67,6 +103,14 @@ abstract class AbstractCsvFileValidator
 
         return $response;
     }
+
+    /**
+     * @param array             $rowData
+     * @param ValidatorResponse $response
+     *
+     * @return ValidatorResponse $response
+     */
+    abstract protected function validateDataRowMultiFields(array $rowData, ValidatorResponse $response = null);
 
     /**
      * validates the given field for expected format
