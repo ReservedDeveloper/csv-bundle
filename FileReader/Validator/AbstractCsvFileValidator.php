@@ -135,14 +135,10 @@ abstract class AbstractCsvFileValidator
      * @param string $dateFieldValue
      * @param string $dateFormat
      *
-     * @return bool true on success, false on failure
+     * @return bool true on success, false on failure or empty $dateFieldValue
      */
     protected final function validateExpectedFieldDateFormat($dateFieldValue, $dateFormat)
     {
-        if (empty($dateFieldValue)) {
-            return true;
-        }
-
         $date = \DateTime::createFromFormat($dateFormat, $dateFieldValue);
 
         if (!$date) {
