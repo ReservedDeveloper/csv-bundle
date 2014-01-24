@@ -10,8 +10,8 @@ namespace Nerdery\CsvBundle\FileReader\Options;
 
 use \InvalidArgumentException;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptionsInterface;
-use Nerdery\CsvBundle\FileReader\Parser\AbstractCsvFileParser;
-use Nerdery\CsvBundle\FileReader\Validator\AbstractCsvFileValidator;
+use Nerdery\CsvBundle\FileReader\Parser\AbstractCsvFileRowParser;
+use Nerdery\CsvBundle\FileReader\Validator\AbstractCsvFileRowValidator;
 
 /**
  * CsvFileReaderOptions
@@ -114,14 +114,14 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     /**
      * Validation Option
      *
-     * @var AbstractCsvFileValidator
+     * @var AbstractCsvFileRowValidator
      */
     private $validationOption;
 
     /**
      * Parser Option
      *
-     * @var AbstractCsvFileParser
+     * @var AbstractCsvFileRowParser
      */
     private $parserOption;
 
@@ -231,7 +231,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     {
         if (isset($options[self::OPTION_VALIDATION])) {
             $validationOption = $options[self::OPTION_VALIDATION];
-            if (!($validationOption instanceof AbstractCsvFileValidator)) {
+            if (!($validationOption instanceof AbstractCsvFileRowValidator)) {
                 throw new InvalidArgumentException(
                     'Provided validator must implement ' .
                     'Nerdery\CsvBundle\FileReader\Validator\CsvFileValidatorInterface.'
@@ -255,7 +255,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     {
         if (isset($options[self::OPTION_PARSER])) {
             $parserOption = $options[self::OPTION_PARSER];
-            if (!($parserOption instanceof AbstractCsvFileParser)) {
+            if (!($parserOption instanceof AbstractCsvFileRowParser)) {
                 throw new InvalidArgumentException(
                     'Provided parser must implement ' .
                     'Nerdery\CsvBundle\FileReader\Parser\CsvFileParserInterface.'
@@ -345,7 +345,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     /**
      * Get the Validation option
      *
-     * @return AbstractCsvFileValidator|null
+     * @return AbstractCsvFileRowValidator|null
      */
     public function getValidationOption()
     {
@@ -355,7 +355,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
     /**
      * Get the Parser option
      *
-     * @return AbstractCsvFileParser|null
+     * @return AbstractCsvFileRowParser|null
      */
     public function getParserOption()
     {

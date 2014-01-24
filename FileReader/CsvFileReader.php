@@ -14,8 +14,7 @@ use Nerdery\CsvBundle\Exception\NoHeaderForDataColumnException;
 use Nerdery\CsvBundle\FileReader\CsvFileReaderInterface;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptions;
 use Nerdery\CsvBundle\FileReader\Options\CsvFileReaderOptionsInterface;
-use Nerdery\CsvBundle\FileReader\Response\AbstractReaderResponse;
-use Nerdery\CsvBundle\FileReader\Validator\ValidatorResponse;
+use Nerdery\CsvBundle\FileReader\Response\ReaderResponse;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -235,21 +234,24 @@ class CsvFileReader implements CsvFileReaderInterface
 
         $data = $this->applyDataHandlingOptions($rowValuesArray);
 
-        if($this->options->getValidationOption()){
-            $response = $this->options->getValidationOption()->validateDataRow($data);
+        $validation = $this->options->getValidationOption();
+        if($validation){
+            $validation->resetResponse($data);
 
-            if(!$response->isValid()){
-                $this->handleResponseError($response);
+            if(!$validation->validateDataRow()){
+                $this->handleResponseError($validation->getResponse());
             }
         }
 
-        if($this->options->getParserOption()){
-            $response = $this->options->getParserOption()->parseRow($data);
+        $parser = $this->options->getParserOption();
+        if($parser){
+            $parser->resetResponse($data);
+            $parsedData = $this->options->getParserOption()->parseRow();
 
-            if($response->isValid()){
-                $data = $response->getParsedData();
+            if($parsedData !== false){
+                $data = $parsedData;
             } else {
-                $this->handleResponseError($response, false);
+                $this->handleResponseError($parser->getResponse(), false);
             }
         }
 
@@ -262,17 +264,17 @@ class CsvFileReader implements CsvFileReaderInterface
     public function parseHeader()
     {
         $headerArray = $this->convertRowToValuesArray();
+        $validation = $this->options->getValidationOption();
 
         if (is_array($headerArray)) {
-            if($this->options->getValidationOption()){
-                $response = $this->options->getValidationOption()->validateHeader($headerArray);
+            if($validation){
+                $validation->resetResponse($headerArray);
 
-                if(!$response->isValid())
-                {
+                if(!$validation->validateHeader()){
                     //add error messages to the queue
                     //we don't want our reading to continue,
                     //as invalid header is a breaker
-                    $this->handleResponseError($response, true);
+                    $this->handleResponseError($validation->getResponse(), true);
                 }
             }
 
@@ -483,14 +485,14 @@ class CsvFileReader implements CsvFileReaderInterface
      * for each affected item. Then outputs a generic error to halt processing
      * of the row
      *
-     * @param AbstractReaderResponse $response
-     * @param bool                   $isBreaking - whether or not this is a recoverable/unrecoverable error
+     * @param ReaderResponse $response
+     * @param bool           $isBreaking - whether or not this is a recoverable/unrecoverable error
      *
-     * @throws \Nerdery\CsvBundle\Exception\FileInvalidRowException
-     * @throws \Nerdery\CsvBundle\Exception\FileInvalidException
+     * @throws FileInvalidRowException
+     * @throws FileInvalidException
      *
      */
-    protected function handleResponseError(AbstractReaderResponse $response, $isBreaking = false){
+    protected function handleResponseError(ReaderResponse $response, $isBreaking = false){
         foreach($response->getErrors() as $exception){
             $event = new CsvParseErrorEvent($exception, $this->getCurrentLineNumber());
             $this->eventDispatcher->dispatch(

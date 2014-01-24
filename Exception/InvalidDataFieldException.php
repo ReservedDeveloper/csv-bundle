@@ -19,25 +19,5 @@ use \Exception;
  */
 class InvalidDataFieldException extends Exception
 {
-    /**
-     * constructor
-     *
-     * @param string|int $fieldName  - the name of the field, or key if none
-     * @param mixed      $fieldValue - the value provided for the field
-     */
-    public function __construct($fieldName = null, $fieldValue = null)
-    {
-        $fieldName = $fieldName
-            ? " '$fieldName' "
-            : " ";
 
-        $fieldValue = $fieldValue
-            ? " '$fieldValue' "
-            : " ";
-
-        $message = "The value" . $fieldValue . " for the specified field" .
-                   $fieldName . "does not match the format dictated by the options";
-
-        parent::__construct($message);
-    }
 }

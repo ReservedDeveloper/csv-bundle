@@ -1,8 +1,9 @@
 <?php
 /**
- *
- * @package Nerdery\CsvBundle\FileReader\Response
- * @subpackage
+ * ReaderResponse.php
+ * @copyright (c) 2013, Sierra Bravo Corp., dba The Nerdery, All rights reserved
+ * @license   BSD-2-Clause
+ * @package   Nerdery\CsvBundle\FileReader\Response
  */
 
 namespace Nerdery\CsvBundle\FileReader\Response;
@@ -16,7 +17,7 @@ use \Exception;
  * @author  Daniel Lakes <dlakes@nerdery.com>
  * @version $Id$
  */
-abstract class AbstractReaderResponse
+class ReaderResponse
 {
     /**
      * @var bool
@@ -29,9 +30,17 @@ abstract class AbstractReaderResponse
     protected $errors;
 
     /**
+     * the array of data to process
+     * for this response
+     *
+     * @var array
+     */
+    protected $rowData;
+
+    /**
      * construct
      *
-     * @return AbstractReaderResponse $this
+     * @return ReaderResponse $this
      */
     public function __construct()
     {
@@ -42,11 +51,8 @@ abstract class AbstractReaderResponse
     /**
      * add an error for the specified field
      *
-     * @param string    $fieldName         - the name of the field which had the error.
-     *                                     In the case of conflicts
-     *                            (i.e. multiple calls for same fieldName)
-     *                                     will append to message
-     * @param Exception $error             - The error for the field
+     * @param string    $fieldName - the name of the field which had the error. In the case of conflicts (i.e. multiple calls for same fieldName) will append to message
+     * @param Exception $error     - The error for the field
      */
     public function addErrorForField($fieldName, \Exception $error)
     {
@@ -82,4 +88,34 @@ abstract class AbstractReaderResponse
     {
         return $this->success;
     }
+
+    /**
+     * getter for rowData
+     *
+     * @return array $rowData
+     * @throws Exception
+     */
+    public function getRowData()
+    {
+        if(!isset($this->rowData)){
+            throw new Exception('No data has been set for this row');
+        }
+
+        return $this->rowData;
+    }
+
+    /**
+     * setter for rowData
+     *
+     * @param array $rowData
+     *
+     * @return  $this
+     */
+    public function setRowData(array $rowData)
+    {
+        $this->rowData = $rowData;
+
+        return $this;
+    }
+
 }
