@@ -7,6 +7,7 @@
  */
  
 namespace Nerdery\CsvBundle\FileReader\Response;
+use Nerdery\CsvBundle\Exception\FileInvalidRowException;
 use Nerdery\CsvBundle\Exception\InvalidDataFieldException;
 
 /**
@@ -128,6 +129,20 @@ class ResponseHandler {
 
         $exception = new InvalidDataFieldException($message);
         $this->getResponse(false)->addErrorForField($fieldKey, $exception);
+    }
+
+    /**
+     * Generate a new exception for the row and
+     * add to the error queue
+     * @param string|null $message
+     */
+    public function addRowErrorForResponse($message = null){
+        $message = !empty($message)
+            ? $message
+            : 'There was an error detected within the row.';
+
+        $exception = new FileInvalidRowException($message);
+        $this->getResponse(false)->addErrorForRow($exception);
     }
 
     /**

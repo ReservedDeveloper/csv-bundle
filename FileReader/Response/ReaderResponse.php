@@ -61,6 +61,16 @@ class ReaderResponse
     }
 
     /**
+     * add a generic error for the row
+     *
+     * @param Exception $error
+     */
+    public function addErrorForRow(\Exception $error)
+    {
+        array_push($this->errors, $error);
+    }
+
+    /**
      * clear error messages and reset success
      */
     public function clearErrors()
@@ -117,5 +127,4 @@ class ReaderResponse
 
         return $this;
     }
-
 }
