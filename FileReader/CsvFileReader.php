@@ -138,7 +138,7 @@ class CsvFileReader implements CsvFileReaderInterface
     {
         $this->open($path);
 
-        $allRowsData = [];
+        $allRowsData = array();
         while (false === $this->endOfFile) {
             $data = $this->parseNextRow();
 
