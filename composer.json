@@ -10,6 +10,10 @@
         {
             "name": "Thomas Houfek",
             "email": "thomas.houfek@nerdery.com"
+        },
+        {
+            "name": "Daniel Lakes",
+            "email": "daniel.lakes@nerdery.com"
         }
     ],
     "require": {
