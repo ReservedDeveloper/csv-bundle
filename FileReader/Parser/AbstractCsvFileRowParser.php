@@ -67,6 +67,7 @@ abstract class AbstractCsvFileRowParser extends ResponseHandler
 
     /**
      * parses each individual field in the data array for expected format
+     * TODO: drop in further explanations here detailing reasoning behind final, strategy approach for the class
      */
     public final function parseRowFields()
     {

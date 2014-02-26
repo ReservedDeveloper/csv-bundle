@@ -102,6 +102,7 @@ abstract class AbstractCsvFileRowValidator extends ResponseHandler
 
     /**
      * validates each pair in the data stored in our response
+     * TODO: drop in further explanations here detailing reasoning behind final, strategy approach for the class
      *
      * @return bool
      */
