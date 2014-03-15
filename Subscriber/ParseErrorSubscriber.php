@@ -54,11 +54,13 @@ class ParseErrorSubscriber implements EventSubscriberInterface
      */
     public static function getSubscribedEvents()
     {
-        return [
-            CsvParseErrorEvent::EVENT_KEY => [
-                ['updateReporter', static::UPDATE_REPORTER_PRIORITY],
-            ],
-        ];
+        return array(
+            CsvParseErrorEvent::EVENT_KEY => array(
+                array(
+                    'updateReporter', static::UPDATE_REPORTER_PRIORITY,
+                ),
+            ),
+        );
     }
 
 
