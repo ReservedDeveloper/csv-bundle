@@ -53,7 +53,7 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
      *
      * @var array
      */
-    private $supportedOptions = [
+    private $supportedOptions = array(
         self::OPTION_LENGTH,
         self::OPTION_DELIMITER,
         self::OPTION_ENCLOSURE,
@@ -62,19 +62,19 @@ class CsvFileReaderOptions implements CsvFileReaderOptionsInterface
         self::OPTION_USE_LABELS_AS_KEYS,
         self::OPTION_VALIDATION,
         self::OPTION_PARSER,
-    ];
+    );
 
     /**
      * Supported header policies.
      *
      * @var array
      */
-    private $supportedHeaderPolicies = [
+    private $supportedHeaderPolicies = array(
         self::HEADER_POLICY_NO_HEADER,
         self::HEADER_POLICY_DISREGARD,
         self::HEADER_POLICY_SUB_DATA_OPTIONAL,
         self::HEADER_POLICY_SUB_DATA_REQUIRED,
-    ];
+    );
 
     /**
      * Length Option.

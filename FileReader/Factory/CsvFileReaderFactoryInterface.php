@@ -22,8 +22,8 @@ interface CsvFileReaderFactoryInterface {
      * Create
      *
      * @param array $options
-     * @return FileReaderInterface
+     * @return CsvFileReaderInterface
      */
-    public function create(array $options = []);
+    public function create(array $options = array());
 
 }
