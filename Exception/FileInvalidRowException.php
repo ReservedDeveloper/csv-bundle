@@ -19,15 +19,19 @@ use \Exception;
  */ 
 class FileInvalidRowException extends Exception
 {
-    /**
-     * Constructor.
-     */
-    public function __construct($message = null)
-    {
-        $message = $message ?
-            $message :
-            'The file appears to be in an invalid format.';
+    const IGNORE_LOGGING_CODE = 99999;
+    const DEFAULT_EXCEPTION_MESSAGE = 'The row appears to be in an invalid format.';
 
-        parent::__construct($message);
+    /**
+     * @inheritdoc
+     */
+    public function __construct($message = "", $code = 0, Exception $previous = null)
+    {
+        $message = $message
+            ? $message
+            : self::DEFAULT_EXCEPTION_MESSAGE;
+
+        parent::__construct($message, $code, $previous);
     }
+
 }

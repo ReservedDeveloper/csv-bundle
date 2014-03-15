@@ -16,14 +16,16 @@ use \Exception;
  */
 class FileInvalidException extends Exception
 {
+    const DEFAULT_INVALID_MESSAGE = 'The file appears to be in an invalid format.';
+
     /**
      * Constructor.
      */
     public function __construct($message = null)
     {
-        $message = $message ?
-            $message :
-            'The file appears to be in an invalid format.';
+        $message = $message
+            ? $message
+            : self::DEFAULT_INVALID_MESSAGE;
 
         parent::__construct($message);
     }

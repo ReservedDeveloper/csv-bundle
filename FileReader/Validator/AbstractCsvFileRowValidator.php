@@ -102,9 +102,11 @@ abstract class AbstractCsvFileRowValidator extends ResponseHandler
 
     /**
      * validates each pair in the data stored in our response
-     * TODO: drop in further explanations here detailing reasoning behind final, strategy approach for the class
+     * Setting as final to maintain consistency in terms of process/response.
+     * Each field is always validated and a bool is always returned in
+     * response to those checks
      *
-     * @return bool
+     * @return bool - whether or not each field in the row is valid
      */
     public final function validateEachDataField()
     {

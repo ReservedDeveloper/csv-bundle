@@ -66,8 +66,13 @@ abstract class AbstractCsvFileRowParser extends ResponseHandler
     }
 
     /**
-     * parses each individual field in the data array for expected format
-     * TODO: drop in further explanations here detailing reasoning behind final, strategy approach for the class
+     * parses each individual field in the data array for expected format.
+     *
+     * Setting as final to maintain consistency in terms of process/response.
+     * Each field is always parsed and that row's data is subsequently updated.
+     * The parsed data is then returned
+     *
+     * @return array|bool - an array of parsed data on success, false on failure.
      */
     public final function parseRowFields()
     {
@@ -107,7 +112,7 @@ abstract class AbstractCsvFileRowParser extends ResponseHandler
      *
      * @return bool
      */
-    protected final function parseDatetimeField($fieldName = "", &$fieldValue, $formatStr)
+    protected function parseDatetimeField($fieldName = "", &$fieldValue, $formatStr)
     {
         $date = \DateTime::createFromFormat($formatStr, $fieldValue);
 

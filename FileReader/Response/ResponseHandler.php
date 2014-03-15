@@ -19,6 +19,9 @@ use Nerdery\CsvBundle\Exception\InvalidDataFieldException;
  */
 class ResponseHandler {
 
+    const DEFAULT_ROW_ERROR_MESSAGE = 'There was an error detected within the row.';
+    const DEFAULT_SPRINTF_INVALID_FIELD_MESSAGE = "The value %s for the specified field %s does not match expected format";
+
     /**
      * @var ReaderResponse
      */
@@ -139,7 +142,7 @@ class ResponseHandler {
     public function addRowErrorForResponse($message = null){
         $message = !empty($message)
             ? $message
-            : 'There was an error detected within the row.';
+            : self::DEFAULT_ROW_ERROR_MESSAGE;
 
         $exception = new FileInvalidRowException($message);
         $this->getResponse(false)->addErrorForRow($exception);
@@ -153,9 +156,7 @@ class ResponseHandler {
      */
     private function generateGenericInvalidFieldMessage($fieldKey, $fieldValue)
     {
-        $message = "The value %s for the specified field %s does not match expected format";
-
-        return $this->generateInvalidFieldMessage($fieldKey, $fieldValue, $message);
+        return $this->generateInvalidFieldMessage($fieldKey, $fieldValue, self::DEFAULT_SPRINTF_INVALID_FIELD_MESSAGE);
     }
 
     /**
