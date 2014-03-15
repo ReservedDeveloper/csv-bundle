@@ -1,9 +1,8 @@
-#Nerdery CSV
--------------
+Nerdery CSV &minus; Overview
+--------------
 This is a bundle used for the reading, validation, and parsing of TSV & CSV files developed internally at [The Nerdery](http://www.nerdery.com).
 
 ##Installation (via Composer)
-=
 Drop the following into your project's composer.json require block:
    >`"nerdery/csv-bundle": "v0.0.3"`
 
@@ -27,11 +26,11 @@ $dataRows = $reader->parse(PATH_TO_FILE);
 ```
 ##Classes
 
-##[`CsvFileReaderOptions`](./FileReader/Options/CsvFileReaderOptions)
+###[`CsvFileReaderOptions`](./FileReader/Options/CsvFileReaderOptions)
 
 This class handles configuring the file reader for usage, setting things like delimiter, adding parsing/validation, etc.
 
-###Full options list:
+####Full options list:
 - `CsvFileReaderOptions::OPTION_LENGTH`
 
  Used to specify the length of the longest line in the CSV file. Defaults to `0`, meaning no maximum is imposed.            
@@ -46,7 +45,7 @@ The character used to escape reserved/special characters. Defaults to `\` (backs
 - `CsvFileReaderOptions::OPTION_HEADER_POLICY`
 
   The policy to designate how the header is going to be handled. Defaults to `CsvFileReaderOptions::HEADER_POLICY_SUB_DATA_OPTIONAL`
-  ####Options:
+  #####Options:
       
     - `CsvFileReaderOptions::HEADER_POLICY_NO_HEADER` 
   
@@ -75,13 +74,13 @@ The character used to escape reserved/special characters. Defaults to `\` (backs
  
  An implementation of the `AbstractCsvFileRowParser` to use for parsing the file. `null` by default.
     
-##[`CsvFileReader`](./FileReader/CsvFileReader)
+###[`CsvFileReader`](./FileReader/CsvFileReader)
 The main operating class for the library. Handles running through the file, pushing it in to an
 associative array (as well as calling any added parsing/validation). Takes `CsvFileReaderOptions` and
 an instance of a class implementing `EventDispatcherInterface`.
 
-##[`AbstractCsvFileRowValidator`](./blob/master/FileReader/Validator/AbstractCsvFileRowValidator)
+###[`AbstractCsvFileRowValidator`](./blob/master/FileReader/Validator/AbstractCsvFileRowValidator)
 Guidelines on usage to come. In the meantime, please see the class documentation.
 
-##[`AbstractCsvFileRowParser`](./blob/master/FileReader/Parser/AbstractCsvFileRowParser)
+###[`AbstractCsvFileRowParser`](./blob/master/FileReader/Parser/AbstractCsvFileRowParser)
 Guidelines on usage to come. In the meantime, please see the class documentation.
