@@ -104,7 +104,7 @@ class Reporter
      */
     public function getGeneralErrors()
     {
-        return $this->lineErrors;
+        return $this->generalErrors;
     }
 
     /**

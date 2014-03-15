@@ -169,13 +169,18 @@ class CsvFileReader implements CsvFileReaderInterface
         } catch (\Exception $e) {
             if($e instanceof FileInvalidException){
                 throw $e; //we want this to stop the parse, as all other rows will be affected by it
-            }
 
-            $event = new CsvParseErrorEvent($e, $this->getCurrentLineNumber());
-            $this->eventDispatcher->dispatch(
-                CsvParseErrorEvent::EVENT_KEY,
-                $event
-            );
+            /**
+             * If we have a FileInvalidRowException, make sure we're supposed to log it.
+             * If we don't, or we shouldn't skip logging, log and proceed.
+             */
+            } else if(!($e instanceof FileInvalidRowException) || $e->getCode() != FileInvalidRowException::IGNORE_LOGGING_CODE){
+                $event = new CsvParseErrorEvent($e, $this->getCurrentLineNumber());
+                $this->eventDispatcher->dispatch(
+                    CsvParseErrorEvent::EVENT_KEY,
+                    $event
+                );
+            }
         }
 
         return $data;
@@ -239,7 +244,7 @@ class CsvFileReader implements CsvFileReaderInterface
             $validation->resetResponse($data);
 
             if(!$validation->validateDataRow()){
-                $this->handleResponseError($validation->getResponse());
+                $this->handleResponseError($validation->getResponse(), false);
             }
         }
 
@@ -428,7 +433,7 @@ class CsvFileReader implements CsvFileReaderInterface
     {
         $this->labelsArray = $headerArray;
         if (false === $this->labelsArray) {
-            throw new FileInvalidException();
+            throw new FileInvalidException('Unable to parse header for labels.');
         }
     }
 
@@ -504,7 +509,7 @@ class CsvFileReader implements CsvFileReaderInterface
         if($isBreaking){
             throw new FileInvalidException('Line ' . $this->getCurrentLineNumber() . ' has encountered an unrecoverable error. Terminating processing.');
         } else {
-            throw new FileInvalidRowException('Line ' . $this->getCurrentLineNumber() . ' has encountered an error and will be skipped');
+            throw new FileInvalidRowException('', FileInvalidRowException::IGNORE_LOGGING_CODE);
         }
     }
 }
