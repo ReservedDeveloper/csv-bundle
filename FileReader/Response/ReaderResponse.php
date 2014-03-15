@@ -44,7 +44,7 @@ class ReaderResponse
      */
     public function __construct()
     {
-        $this->errors  = [];
+        $this->errors  = array();
         $this->success = true;
     }
 
@@ -75,7 +75,7 @@ class ReaderResponse
      */
     public function clearErrors()
     {
-        $this->errors  = [];
+        $this->errors  = array();
         $this->success = true;
     }
 

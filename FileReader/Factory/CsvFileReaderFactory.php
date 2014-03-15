@@ -46,7 +46,7 @@ class CsvFileReaderFactory implements CsvFileReaderFactoryInterface
      * @param array $options
      * @return CsvFileReaderInterface
      */
-    public function create(array $options = [])
+    public function create(array $options = array())
     {
         $csvFileReaderOptions = new CsvFileReaderOptions($options);
 

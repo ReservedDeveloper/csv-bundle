@@ -41,8 +41,8 @@ class Reporter
      */
     public function __construct()
     {
-        $this->lineErrors    = [];
-        $this->generalErrors = [];
+        $this->lineErrors    = array();
+        $this->generalErrors = array();
         $this->hasError      = false;
     }
 
@@ -90,7 +90,7 @@ class Reporter
     {
 
         if (false === isset($this->lineErrors["$lineNumber"])) {
-            $this->lineErrors["$lineNumber"] = [];
+            $this->lineErrors["$lineNumber"] = array();
         }
         $this->lineErrors["$lineNumber"][] = $errorMsg;
     }
